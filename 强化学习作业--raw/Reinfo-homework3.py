@@ -108,18 +108,18 @@ class DQN(nn.Module):
         )
 
         self.conv3 = nn.Sequential(
-            nn.Conv2d(32, 64, 5, 1, 2),  # 输出 (64, 24, 24)
+            nn.Conv2d(32, 1, 5, 1, 2),  # 输出 (batch_size, 24, 24)
             nn.ReLU(),
-            nn.MaxPool2d(2),  # 输出 (64, 12, 12)
+            nn.MaxPool2d(2),  # 输出 (batch_size, 12, 12)
         )
 
-        self.out = nn.Linear(64 * 10 * 10, action_size)  # 全连接层得到的结果 ， 4个动作
+        self.out = nn.Linear(1 * 10 * 10, action_size)  # 全连接层得到的结果 ， 4个动作
 
     def forward(self, x):
         x = self.conv1(x)
         x = self.conv2(x)
         x = self.conv3(x)
-        x = x.view(x.size(0), -1)  # 这样就将特征展开，组成了【batch，特征数】
+        x = x.view( -1)  # 这样就将特征展开，组成了【batch，特征数】
         output = self.out(x)  # 这样就可以计算全连接操作，一个特征图不能做全连接操作
         return output
 
@@ -154,7 +154,7 @@ criterion = nn.CrossEntropyLoss()
 adam = Adam(lr=1e-3, params=dqn_model.parameters())  # 定义优化器，普通的随机梯度下降算法
 loss_fn = nn.MSELoss()
 
-num_epochs = 1
+num_epochs = 4
 
 
 # collect
@@ -200,12 +200,12 @@ epoch = 100
 
 def train():
     for e in range(epoch):
-        batch_size = 512
+        batch_size = 2
         for i in range(experience_buffer.size // batch_size):
             print(i, end=',')
             s, s_n, r, a, a_n = experience_buffer.batch(batch_size)
 
-            target = torch.tensor(r, dtype=torch.float).to(torch.device("cuda")) + gamma * target_model(s_n)[0][
+            target = torch.tensor(r, dtype=torch.float).to(torch.device("cuda")) + gamma * target_model(torch.tensor(s_n, dtype=torch.float).to(torch.device("cuda")).unsqueeze(0))[0][
                 torch.arange(batch_size), a_n]
             y = dqn_model(s)[0][torch.arange(batch_size), a]
 
