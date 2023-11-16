@@ -4,7 +4,7 @@ import time
 import gymnasium as gym
 import numpy as np
 import torch
-from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt, animation
 import chex
 from PIL import Image
 from torch.nn.functional import relu
@@ -116,10 +116,11 @@ class DQN(nn.Module):
         self.out = nn.Linear(1 * 10 * 10, action_size)  # 全连接层得到的结果 ， 4个动作
 
     def forward(self, x):
+        batc_size = x.size(0)
         x = self.conv1(x)
         x = self.conv2(x)
         x = self.conv3(x)
-        x = x.view( -1)  # 这样就将特征展开，组成了【batch，特征数】
+        x = x.view(batc_size, -1)
         output = self.out(x)  # 这样就可以计算全连接操作，一个特征图不能做全连接操作
         return output
 
@@ -131,7 +132,7 @@ def policy(model, state, _eval=False):
         return random.randint(0, model.action_size - 1)
     else:
         # exploitation
-        q_values = dqn_model(torch.tensor(state, dtype=torch.float).to(torch.device("cuda")).unsqueeze(0))
+        q_values = dqn_model(torch.tensor([state], dtype=torch.float).to(torch.device("cuda")))
         action = torch.multinomial(F.softmax(q_values), num_samples=1)
         return int(action[0])
 
@@ -154,7 +155,7 @@ criterion = nn.CrossEntropyLoss()
 adam = Adam(lr=1e-3, params=dqn_model.parameters())  # 定义优化器，普通的随机梯度下降算法
 loss_fn = nn.MSELoss()
 
-num_epochs = 4
+num_epochs = 500
 
 
 # collect
@@ -195,25 +196,38 @@ losses = []
 target_fix_period = 5
 gamma = 0.99
 
-epoch = 100
+epoch = 10
 
 
 def train():
     for e in range(epoch):
-        batch_size = 2
+        batch_size = 50
         for i in range(experience_buffer.size // batch_size):
             print(i, end=',')
             s, s_n, r, a, a_n = experience_buffer.batch(batch_size)
 
-            target = torch.tensor(r, dtype=torch.float).to(torch.device("cuda")) + gamma * target_model(torch.tensor(s_n, dtype=torch.float).to(torch.device("cuda")).unsqueeze(0))[0][
-                torch.arange(batch_size), a_n]
-            y = dqn_model(s)[0][torch.arange(batch_size), a]
+            # sn = torch.tensor(s_n, dtype=torch.float).to(torch.device("cuda"))
+            # sn_dataset = torch.utils.data.DataLoader(dataset=sn,
+            #                                          batch_size=batch_size,
+            #                                          shuffle=True)
+            # s_dataset = torch.utils.data.DataLoader(dataset=s,
+            #                                         batch_size=batch_size,
+            #                                         shuffle=True)
+            # target = torch.tensor(r, dtype=torch.float).to(torch.device("cuda")) + gamma * \
+            #          target_model(sn_dataset)[0][
+            #              torch.arange(batch_size), a_n]
+            # y = dqn_model(s_dataset)[0][torch.arange(batch_size), a]
 
-            loss = loss_fn(y, target)
+            target = (gamma * torch.max(target_model(
+                torch.unsqueeze(torch.tensor(s_n, dtype=torch.float).to(torch.device("cuda")), 1)), dim=1)[0].unsqueeze(
+                1)) + torch.tensor(
+                r).to(torch.device("cuda")).unsqueeze(1)
+            y = dqn_model(torch.unsqueeze(torch.tensor(s, dtype=torch.float).to(torch.device("cuda")), 1)).gather(1,torch.LongTensor(a).unsqueeze(1).to(torch.device("cuda")))
+            loss = loss_fn(y.float(), target.float())
             loss.backward()
             adam.zero_grad()
             adam.step()
-            losses.append(loss.detach().numpy())
+            # losses.append(loss.detach().numpy())
 
             if i % 10 == 0:
                 print(f'i == {i}, loss = {loss} ')
@@ -223,14 +237,36 @@ def train():
                 target_model.load_state_dict(dqn_model.state_dict())
 
 
+def animate_method_3(frames):
+    ## pending ..
+    patch = plt.imshow(frames[0])
+    plt.axis('off')
+
+    def animate(i):
+        patch.set_data(frames[i])
+
+    anim = animation.FuncAnimation(plt.gcf(), animate, frames=len(frames), interval=500, blit=True)
+    plt.show()
+
+
+dqn_model.train()
 train()
 
 env.reset()
-env.action_space.sample()
-draw()
+frames = []
+env.reset()
+doule_q_frames = []
 
-resized = resize(frames[0], (84, 84))
-turntogray = rgb2y(resized)
-plt.imshow(turntogray)
-plt.show()
-print(turntogray.shape)
+while True:
+    state = getStateFromEnv(env.render())
+    action = dqn_model(state)
+    state, reward, terminated, truncated, info = env.step(action)
+#    draw()
+    doule_q_frames.append(env.render())
+    if terminated or truncated:
+        print("finished!")
+        break
+#display_frames_as_gif("test2.gif",frames)
+#env.close()
+
+animate_method_3(doule_q_frames)
