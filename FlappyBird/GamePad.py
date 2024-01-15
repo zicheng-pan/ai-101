@@ -37,7 +37,7 @@ class GamePad:
         if not (0 + self.bird.bird_radius <= self.bird.bird_y <= self.screen_height - self.bird.bird_radius):
             return True
 
-        if self.pipe_pair.get_pipes_position_x() + self.bird.bird_radius <= self.bird.bird_x <= self.pipe_pair.get_pipes_position_x() + PipePair.pipe_width - self.bird.bird_radius:
+        if self.pipe_pair.get_pipes_position_x() - self.bird.bird_radius <= self.bird.bird_x <= self.pipe_pair.get_pipes_position_x() + PipePair.pipe_width + self.bird.bird_radius:
             if self.pipe_pair.get_pipes_position_y()[0] <= self.bird.bird_y <= self.pipe_pair.get_pipes_position_y()[1]:
                 return False
             else:

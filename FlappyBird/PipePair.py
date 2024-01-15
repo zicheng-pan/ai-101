@@ -41,7 +41,7 @@ class PipePair:
         return self.pipe_pair[0][0]
 
     def get_pipes_position_y(self):
-        return [self.pipe_pair[0][1], self.pipe_pair[1][1]]
+        return [self.pipe_pair[0][1] + self.pad.screen_height, self.pipe_pair[1][1]]
 
     def get_pipes_count(self):
         return self.count
