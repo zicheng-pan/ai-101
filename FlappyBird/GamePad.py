@@ -48,11 +48,11 @@ class GamePad:
         # 显示分数和重启提示
         font = pygame.font.SysFont(None, 36)
         text = font.render("Game Over! Press Enter to Restart", True, self.WHITE)
-        text_rect = text.get_rect(center=(self.screen_width / 2, self.screen_height / 2))
+        text_rect = text.get_rect(center=(self.screen_width // 2, self.screen_height // 2))
         self.screen.blit(text, text_rect)
 
         text = font.render("get scores: {}".format(self.pipe_pair.get_pipes_count()), True, self.WHITE)
-        text_rect = text.get_rect(center=(self.screen_width / 2, self.screen_height / 2 + 72))
+        text_rect = text.get_rect(center=(self.screen_width // 2, self.screen_height // 2 + 72))
         self.screen.blit(text, text_rect)
 
     def reset_game(self):
@@ -94,4 +94,5 @@ class GamePad:
             pygame.display.flip()
 
             # Frame rate
-            self.clock.tick(1)  # 60 frames per second
+            self.clock.tick(60)  # 60 frames per second
+
