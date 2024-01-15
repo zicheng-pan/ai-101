@@ -12,6 +12,7 @@ class PipePair:
         self.pad = pad
         self.color = color
         self.pipe_pair = self.create_pipe()
+        self.count = 0
 
     def draw_self(self):
         # TODO 记录下方法的作用，先展示下pygame的api
@@ -34,9 +35,13 @@ class PipePair:
         self.pipe_pair[1][0] += self.pad.scroll_speed
         if self.pipe_pair[0][0] < 0:
             self.pipe_pair = self.create_pipe()
+            self.count += 1
 
     def get_pipes_position_x(self):
         return self.pipe_pair[0][0]
 
     def get_pipes_position_y(self):
         return [self.pipe_pair[0][1], self.pipe_pair[1][1]]
+
+    def get_pipes_count(self):
+        return self.count
