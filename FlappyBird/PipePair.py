@@ -27,10 +27,16 @@ class PipePair:
         random_pipe_pos = random.choice(PipePair.pipe_heights)
         bottom_pipe = [self.pad.screen_width, random_pipe_pos]
         top_pipe = [self.pad.screen_width, random_pipe_pos - self.pad.screen_height - PipePair.pipe_gap]
-        return [bottom_pipe, top_pipe]
+        return [top_pipe, bottom_pipe]
 
     def move_pipes(self):
         self.pipe_pair[0][0] += self.pad.scroll_speed
         self.pipe_pair[1][0] += self.pad.scroll_speed
         if self.pipe_pair[0][0] < 0:
             self.pipe_pair = self.create_pipe()
+
+    def get_pipes_position_x(self):
+        return self.pipe_pair[0][0]
+
+    def get_pipes_position_y(self):
+        return [self.pipe_pair[0][1], self.pipe_pair[1][1]]

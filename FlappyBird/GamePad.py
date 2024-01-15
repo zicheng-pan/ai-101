@@ -31,6 +31,14 @@ class GamePad:
         self.gravity = 0.5
         self.pipe_pair = PipePair(self, GamePad.WHITE)
 
+    def check_collision(self):
+        if self.pipe_pair.get_pipes_position_x() <= self.bird.bird_x <= self.pipe_pair.get_pipes_position_x() + PipePair.pipe_width:
+            if self.pipe_pair.get_pipes_position_y()[0] <= self.bird.bird_y <= self.pipe_pair.get_pipes_position_y()[1]:
+                return False
+            else:
+                return True
+        return False
+
     def play(self):
         # Game loop
         while True:
@@ -52,9 +60,13 @@ class GamePad:
                 self.pipe_pair.draw_self()
                 self.pipe_pair.move_pipes()
 
+                # 碰撞检测
+                if (self.check_collision()):
+                    self.game_active = False
 
             # Update the display
-            pygame.display.update()
+            pygame.display.flip()
 
             # Frame rate
             self.clock.tick(60)  # 60 frames per second
+
