@@ -2,6 +2,7 @@
 import pygame
 
 from FlappyBird.Bird import Bird
+from FlappyBird.PipePair import PipePair
 
 
 class GamePad:
@@ -23,11 +24,12 @@ class GamePad:
         self.screen = pygame.display.set_mode((screen_width, screen_height))
         self.game_active = True
         pygame.display.set_caption("Flappy Bird")
-        self.bird = Bird(0, self.screen_height // 2, 20, 10)
+        self.bird = Bird(self, 24, self.screen_height // 2, 20, 10)
         # Clock to control the frame rate
         self.clock = pygame.time.Clock()
         # 重力
         self.gravity = 0.5
+        self.pipe_pair = PipePair(self, GamePad.WHITE)
 
     def play(self):
         # Game loop
@@ -45,15 +47,11 @@ class GamePad:
             if self.game_active:
                 # Bird movement
                 self.bird.free_fall(self.gravity)
-                self.bird.draw_self(self)
-                #
-                # # Move and draw pipes
-                # pipe_list = move_pipes(pipe_list)
-                #
-                # draw_pipes(pipe_list)
-                #
-                # # Check for collisions
-                # game_active = check_collision(pipe_list)
+                self.bird.draw_self()
+
+                self.pipe_pair.draw_self()
+                self.pipe_pair.move_pipes()
+
 
             # Update the display
             pygame.display.update()

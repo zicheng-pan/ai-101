@@ -5,30 +5,6 @@ import random
 
 
 
-# 绘制管道 pipes是list类型
-def draw_pipes(pipes):
-    for pipe_pair in pipes:
-        pygame.draw.rect(screen, WHITE, (pipe_pair[0][0], pipe_pair[0][1], pipe_width, screen_height))
-        pygame.draw.rect(screen, WHITE, (pipe_pair[1][0], pipe_pair[1][1], pipe_width, screen_height))
-
-
-# 创建管道位置
-def create_pipe():
-    random_pipe_pos = random.choice(pipe_heights)
-    bottom_pipe = [screen_width, random_pipe_pos]  # Using list instead of tuple
-    top_pipe = [screen_width, random_pipe_pos - pipe_gap - screen_height]  # Using list
-    return [bottom_pipe, top_pipe]  # Returning a list of lists
-
-
-def move_pipes(pipes):
-    for pipe_pair in pipes:
-        pipe_pair[0][0] += scroll_speed  # Update x-position of bottom pipe
-        pipe_pair[1][0] += scroll_speed  # Update x-position of top pipe
-        if pipe_pair[0][0] < 0:
-            pipes.pop()
-            pipes.append(create_pipe())
-    return pipes
-
 
 def check_collision(pipes):
     for pipe_pair in pipes:
