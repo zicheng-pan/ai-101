@@ -94,4 +94,4 @@ class GamePad:
             pygame.display.flip()
 
             # Frame rate
-            self.clock.tick(60)  # 60 frames per second
+            self.clock.tick(1)  # 60 frames per second
