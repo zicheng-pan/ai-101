@@ -47,6 +47,7 @@ class GamePad:
         return False
 
     def show_game_over_screen(self):
+        self.screen.fill((0, 0, 0))
         # 显示分数和重启提示
         font = pygame.font.SysFont(None, 36)
         text = font.render("Game Over! Press Enter to Restart", True, self.WHITE)
@@ -82,9 +83,21 @@ class GamePad:
     def get_reward(self):
         return self.reward
 
-    def step(self):
-        # Bird movement
-        self.bird.free_fall(self.gravity)
+    def step(self, action):
+        # action: 0 不跳，1是跳
+        if action == 1:
+            fake_space_event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_SPACE)
+            pygame.event.post(fake_space_event)
+
+    def do_next_action(self, action):
+        # action: 0 不跳，1是跳
+        if action == 0:
+            # Bird movement
+            self.bird.free_fall(self.gravity)
+        elif action == 1:
+            self.bird.jump()
+        else:
+            raise Exception("error input action")
         self.pipe_pair.move_pipes()
         # 碰撞检测
         is_collision = self.check_collision()
@@ -96,9 +109,10 @@ class GamePad:
 
         return self.get_state(), self.get_reward(), is_collision
 
-    def play(self):
+    def play(self, is_auto):
         # Game loop
         while True:
+            self.screen.fill((0, 0, 0))  # Clear screen
             # Event handling
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -110,18 +124,15 @@ class GamePad:
                     if event.key == pygame.K_RETURN and not self.game_active:
                         self.reset_game()
 
-            self.screen.fill((0, 0, 0))  # Clear screen
             if self.game_active:
                 # Bird movement
-                new_state, reward, done = self.step()
-                # print(new_state, reward, done)
-                self.pipe_pair.draw_self()
-                self.bird.draw_self()
-
+                new_state, reward, done = self.do_next_action(0)
+                print(new_state, reward, done)
                 # 碰撞检测
                 if done:
                     self.game_active = False
-
+                self.pipe_pair.draw_self()
+                self.bird.draw_self()
             else:
                 self.show_game_over_screen()
 
@@ -130,6 +141,3 @@ class GamePad:
 
             # Frame rate
             self.clock.tick(60)  # 60 frames per second
-
-
-
