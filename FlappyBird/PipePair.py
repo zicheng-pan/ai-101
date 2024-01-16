@@ -26,10 +26,11 @@ class PipePair:
     def create_pipe(self):
         # 这里choice随机选择一个下管道所在的位置，然后计算通过gap和屏幕长度计算上管道所在的绘画起始位置
         # random_pipe_pos = random.choice(PipePair.pipe_heights)
+        # 这里做了限制
         random_pipe_pos = 500
         bottom_pipe = [self.pad.screen_width, random_pipe_pos]
         top_pipe = [self.pad.screen_width, random_pipe_pos - self.pad.screen_height - PipePair.pipe_gap]
-        print([top_pipe, bottom_pipe])
+        # print([top_pipe, bottom_pipe])
         return [top_pipe, bottom_pipe]
 
     def move_pipes(self):

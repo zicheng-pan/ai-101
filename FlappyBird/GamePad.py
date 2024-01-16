@@ -91,8 +91,8 @@ class GamePad:
         # [      bird_y,         bird_velocity,          pipe_distance,
         # top_pipe_bottom_y, bottom_pipe_top_y]
 
-        return [self.bird.bird_y, self.bird.bird_movement, self.pipe_pair.get_pipes_position_x(),
-                self.pipe_pair.get_pipes_position_y()[0], self.pipe_pair.get_pipes_position_y()[1]]
+        return (self.bird.bird_y, self.bird.bird_movement, self.pipe_pair.get_pipes_position_x(),
+                self.pipe_pair.get_pipes_position_y()[0], self.pipe_pair.get_pipes_position_y()[1])
 
     def add_reward(self, reward=1):
         self.reward += reward
@@ -118,7 +118,7 @@ class GamePad:
         if is_collision:
             self.sub_reward()
         elif self.pass_pipe_count < self.pipe_pair.get_pipes_count():
-            self.add_reward(self.pipe_pair.get_pipes_count() - self.pass_pipe_count)
+            self.add_reward((self.pipe_pair.get_pipes_count() - self.pass_pipe_count)*10)
             self.pass_pipe_count = self.pipe_pair.get_pipes_count()
 
         return self.get_state(), self.get_reward(), is_collision
