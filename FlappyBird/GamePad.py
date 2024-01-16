@@ -1,5 +1,7 @@
 # 游戏面板
 import pygame
+import socket
+import threading
 
 from FlappyBird.Bird import Bird
 from FlappyBird.PipePair import PipePair
@@ -14,7 +16,25 @@ class GamePad:
     WHITE = (255, 255, 255)
     BLUE = (0, 0, 255)
 
+    # 初始化网络编程模板
+    def simulate_key_press(self, key):
+        fake_event = pygame.event.Event(pygame.KEYDOWN, key=key)
+        pygame.event.post(fake_event)
+
+    def handle_client(self, client_socket):
+        while True:
+            msg = client_socket.recv(1024).decode('utf-8')
+            if msg:
+                if msg == 'SPACE':
+                    self.simulate_key_press(pygame.K_SPACE)
+
     def __init__(self, screen_width, screen_height):
+
+        # 设置 socket
+        self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server.bind(('localhost', 9999))
+        self.server.listen(1)
+
         # Initialize Pygame
         pygame.init()
         # Game variables
@@ -83,12 +103,6 @@ class GamePad:
     def get_reward(self):
         return self.reward
 
-    def step(self, action):
-        # action: 0 不跳，1是跳
-        if action == 1:
-            fake_space_event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_SPACE)
-            pygame.event.post(fake_space_event)
-
     def do_next_action(self, action):
         # action: 0 不跳，1是跳
         if action == 0:
@@ -110,6 +124,15 @@ class GamePad:
         return self.get_state(), self.get_reward(), is_collision
 
     def play(self, is_auto):
+        if is_auto:
+            print("waiting for web connect....!!!")
+            client_sock, addr = self.server.accept()
+            print(f"Connected to {addr}")
+            # 这里做界面展示render和step不render如何整合
+        else:
+            self.play_manual()
+
+    def play_manual(self):
         # Game loop
         while True:
             self.screen.fill((0, 0, 0))  # Clear screen
@@ -141,3 +164,12 @@ class GamePad:
 
             # Frame rate
             self.clock.tick(60)  # 60 frames per second
+
+    def step(self, action):
+        return self.do_next_action(action)
+
+    def step_render(self, action):
+        # action: 0 不跳，1是跳
+        if action == 1:
+            fake_space_event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_SPACE)
+            pygame.event.post(fake_space_event)
