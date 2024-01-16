@@ -31,6 +31,8 @@ class GamePad:
         self.game_active = True
         self.bird = Bird(self, 24, self.screen_height // 2, 20, 10)
         self.pipe_pair = PipePair(self, GamePad.WHITE)
+        self.reward = 0.1
+        self.pass_pipe_count = 0
 
     def check_collision(self):
 
@@ -59,6 +61,40 @@ class GamePad:
         self.game_active = True
         self.bird = Bird(self, 24, self.screen_height // 2, 20, 10)
         self.pipe_pair = PipePair(self, GamePad.WHITE)
+        self.reward = 0.1
+        self.pass_pipe_count = 0
+        return self.get_state()
+
+    # 解释下强化学习的各种名词
+    def get_state(self):
+        # [      bird_y,         bird_velocity,          pipe_distance,
+        # top_pipe_bottom_y, bottom_pipe_top_y]
+
+        return [self.bird.bird_y, self.bird.bird_movement, self.pipe_pair.get_pipes_position_x(),
+                self.pipe_pair.get_pipes_position_y()[0], self.pipe_pair.get_pipes_position_y()[1]]
+
+    def add_reward(self, reward=1):
+        self.reward += reward
+
+    def sub_reward(self):
+        self.reward -= 1000
+
+    def get_reward(self):
+        return self.reward
+
+    def step(self):
+        # Bird movement
+        self.bird.free_fall(self.gravity)
+        self.pipe_pair.move_pipes()
+        # 碰撞检测
+        is_collision = self.check_collision()
+        if is_collision:
+            self.sub_reward()
+        elif self.pass_pipe_count < self.pipe_pair.get_pipes_count():
+            self.add_reward(self.pipe_pair.get_pipes_count() - self.pass_pipe_count)
+            self.pass_pipe_count = self.pipe_pair.get_pipes_count()
+
+        return self.get_state(), self.get_reward(), is_collision
 
     def play(self):
         # Game loop
@@ -77,14 +113,13 @@ class GamePad:
             self.screen.fill((0, 0, 0))  # Clear screen
             if self.game_active:
                 # Bird movement
-                self.bird.free_fall(self.gravity)
+                new_state, reward, done = self.step()
+                # print(new_state, reward, done)
+                self.pipe_pair.draw_self()
                 self.bird.draw_self()
 
-                self.pipe_pair.draw_self()
-                self.pipe_pair.move_pipes()
-
                 # 碰撞检测
-                if (self.check_collision()):
+                if done:
                     self.game_active = False
 
             else:
@@ -95,4 +130,6 @@ class GamePad:
 
             # Frame rate
             self.clock.tick(60)  # 60 frames per second
+
+
 
