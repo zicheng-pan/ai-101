@@ -17,7 +17,7 @@ with open('version_1_Q_table.pkl', 'rb') as file:
 
 # 训练次数
 # 大家也同我一起见证了大力出奇迹的效果
-episode = 10000
+episode = 100000000
 
 # 声明Env
 env = FlappyBirdEnv()
@@ -39,8 +39,8 @@ def policy(state, is_train):
             else:
                 return 1
 
-#
-# # 进行Q_table的训练
+
+# 进行Q_table的训练
 # for i in range(episode):
 #     # trajectory = []
 #     state = env.reset()
@@ -76,8 +76,8 @@ state = env.reset()
 print(state)
 
 # 将对象序列化并保存到文件
-with open('version_Q_table.pkl', 'wb') as file:
-    pickle.dump(Q_table, file)
+# with open('version_1_table.pkl', 'wb') as file:
+#     pickle.dump(Q_table, file)
 new_state = state
 while True:
     action = policy(new_state, False)
