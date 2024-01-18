@@ -30,7 +30,7 @@ if __name__ == '__main__':
         print("action:" + str(action))
 
         client.send(str(action).encode('utf-8'))
-
+        sleep(1)
         # if not flappyBird.pad.game_active:
         #     break
         # response = client.recv(1024)

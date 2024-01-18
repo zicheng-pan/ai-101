@@ -138,6 +138,8 @@ class GamePad:
     def play_by_control(self):
         print("waiting for web connect....!!!")
         client_socket, addr = self.server.accept()
+        thread = threading.Thread(target=self.handle_client, args=(client_socket,))
+        thread.start()
         print(f"Connected to {addr}")
         # Game loop
         while True:
@@ -147,13 +149,6 @@ class GamePad:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     exit()
-
-                msg = client_socket.recv(1024).decode('utf-8')
-                if msg:
-                    if msg == '0':
-                        self.do_next_action(0)
-                    elif msg == '1':
-                        self.do_next_action(1)
 
             self.draw_current_state()
             # Update the display
