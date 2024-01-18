@@ -2,7 +2,7 @@ import random
 import threading
 from time import sleep
 
-from FlappyBird.FlappyBirdEnv import FlappyBirdEnv
+from FlappyBird.FlappyBirdEnv_local import FlappyBirdEnv
 from FlappyBird.GamePad import GamePad
 import socket
 
