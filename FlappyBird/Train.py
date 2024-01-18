@@ -2,7 +2,7 @@ import random
 import pickle
 
 # 学习率
-from FlappyBird.FlappyBirdEnv import FlappyBirdEnv
+from FlappyBird.FlappyBirdEnv_local import FlappyBirdEnv
 
 alpha = 0.9
 # 折扣因子
@@ -41,36 +41,36 @@ def policy(state, is_train):
 
 
 # 进行Q_table的训练
-# for i in range(episode):
-#     # trajectory = []
-#     state = env.reset()
-#     # print(info["action_mask"])
-#     # a = env.action_space.sample(info["action_mask"])
-#     action = policy(state, True)
-#     count = 0
-#     while True:
-#         state_next, reward, done = env.step(action)
-#
-#         if state_next not in Q_table:
-#             Q_table[state_next] = [random.uniform(-0.01, 0.01), random.uniform(-0.01, 0.01)]
-#         # plt.imshow(env.render())
-#         # plt.show()
-#         action_next = policy(state_next, True)
-#
-#         Q_old = Q_table[state][action]
-#         Q_new = gamma * Q_table[state_next][action_next] + reward
-#
-#         # 防止错误路径依赖
-#         # Q_new = gamma * Q_table[state_next][np.argmax(Q_table[state_next][np.where(info_next["action_mask"] == 1)[0]])] + reward
-#         Q_table[state][action] = alpha * (Q_new - Q_old) + Q_old
-#
-#         if done :
-#             print("第{}次,执行了{}".format(i, count))
-#             count = 0
-#             break
-#         count += 1
-#         state = state_next
-#         action = action_next
+for i in range(episode):
+    # trajectory = []
+    state = env.reset()
+    # print(info["action_mask"])
+    # a = env.action_space.sample(info["action_mask"])
+    action = policy(state, True)
+    count = 0
+    while True:
+        state_next, reward, done = env.step(action)
+
+        if state_next not in Q_table:
+            Q_table[state_next] = [random.uniform(-0.01, 0.01), random.uniform(-0.01, 0.01)]
+        # plt.imshow(env.render())
+        # plt.show()
+        action_next = policy(state_next, True)
+
+        Q_old = Q_table[state][action]
+        Q_new = gamma * Q_table[state_next][action_next] + reward
+
+        # 防止错误路径依赖
+        # Q_new = gamma * Q_table[state_next][np.argmax(Q_table[state_next][np.where(info_next["action_mask"] == 1)[0]])] + reward
+        Q_table[state][action] = alpha * (Q_new - Q_old) + Q_old
+
+        if done :
+            print("第{}次,执行了{}".format(i, count))
+            count = 0
+            break
+        count += 1
+        state = state_next
+        action = action_next
 
 state = env.reset()
 print(state)

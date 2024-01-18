@@ -1,4 +1,6 @@
 # 游戏面板
+import json
+
 import pygame
 import socket
 import threading
@@ -24,11 +26,26 @@ class GamePad:
     def handle_client(self, client_socket):
         while True:
             msg = client_socket.recv(1024).decode('utf-8')
+            retmsg = ""
             if msg:
-                if msg == 'SPACE':
-                    self.do_next_action(0)
-                else:
-                    self.do_next_action(1)
+                if msg == "0":
+                    state, r, is_collision = self.do_next_action(0)
+                    retmsg = json.dumps((state, r, is_collision)).encode('utf-8')
+                    if is_collision:
+                        client_socket.close()
+                elif msg == "1":
+                    state, r, is_collision = self.do_next_action(1)
+                    retmsg = json.dumps((state, r, is_collision)).encode('utf-8')
+                elif msg == "reset":
+                    state = self.reset_game()
+                    retmsg = json.dumps(state).encode('utf-8')
+                elif msg == "close":
+                    print("close connection!!!")
+                    client_socket.close()
+                    self.game_active = False
+                    pygame.quit()
+                    return
+                client_socket.send(retmsg)
 
     def __init__(self, screen_width, screen_height):
 
@@ -142,7 +159,7 @@ class GamePad:
         thread.start()
         print(f"Connected to {addr}")
         # Game loop
-        while True:
+        while self.game_active:
             self.screen.fill((0, 0, 0))  # Clear screen
             # Event handling
             for event in pygame.event.get():
