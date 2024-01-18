@@ -26,7 +26,9 @@ class GamePad:
             msg = client_socket.recv(1024).decode('utf-8')
             if msg:
                 if msg == 'SPACE':
-                    self.simulate_key_press(pygame.K_SPACE)
+                    self.do_next_action(0)
+                else:
+                    self.do_next_action(1)
 
     def __init__(self, screen_width, screen_height):
 
@@ -118,19 +120,47 @@ class GamePad:
         if is_collision:
             self.sub_reward()
         elif self.pass_pipe_count < self.pipe_pair.get_pipes_count():
-            self.add_reward((self.pipe_pair.get_pipes_count() - self.pass_pipe_count)*10)
+            self.add_reward((self.pipe_pair.get_pipes_count() - self.pass_pipe_count) * 100)
             self.pass_pipe_count = self.pipe_pair.get_pipes_count()
 
         return self.get_state(), self.get_reward(), is_collision
 
     def play(self, is_auto):
         if is_auto:
-            print("waiting for web connect....!!!")
-            client_sock, addr = self.server.accept()
-            print(f"Connected to {addr}")
-            # 这里做界面展示render和step不render如何整合
+
+            # # 这里做界面展示render和step不render如何整合
+            self.play_by_control()
+
         else:
             self.play_manual()
+        print("starting game ....")
+
+    def play_by_control(self):
+        print("waiting for web connect....!!!")
+        client_socket, addr = self.server.accept()
+        print(f"Connected to {addr}")
+        # Game loop
+        while True:
+            self.screen.fill((0, 0, 0))  # Clear screen
+            # Event handling
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
+
+                msg = client_socket.recv(1024).decode('utf-8')
+                if msg:
+                    if msg == '0':
+                        self.do_next_action(0)
+                    elif msg == '1':
+                        self.do_next_action(1)
+
+            self.draw_current_state()
+            # Update the display
+            pygame.display.flip()
+
+            # Frame rate
+            # self.clock.tick(60)  # 60 frames per second
 
     def play_manual(self):
         # Game loop
@@ -150,7 +180,7 @@ class GamePad:
             if self.game_active:
                 # Bird movement
                 new_state, reward, done = self.do_next_action(0)
-                print(new_state, reward, done)
+                # print(new_state, reward, done)
                 # 碰撞检测
                 if done:
                     self.game_active = False
@@ -173,3 +203,10 @@ class GamePad:
         if action == 1:
             fake_space_event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_SPACE)
             pygame.event.post(fake_space_event)
+
+    def save_img(self, imgName):
+        pygame.image.save(self.screen, imgName)
+
+    def draw_current_state(self):
+        self.pipe_pair.draw_self()
+        self.bird.draw_self()
